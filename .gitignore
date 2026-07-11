@@ -1,0 +1,36 @@
+# Compiled binaries
+/alive
+/alive.exe
+cmd/alive/alive
+cmd/alive/alive.exe
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test and coverage output
+*.test
+*.out
+coverage.txt
+coverage.html
+cover.out
+
+# Go build/module cache and workspace files (leave go.mod and go.sum tracked)
+/vendor/
+go.work
+go.work.sum
+
+# Backups produced by alive.name during local runs (never commit these)
+*.bundle
+alive-backup-*/
+
+# OS cruft
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor and IDE
+.idea/
+.vscode/
+*.swp
+*~
