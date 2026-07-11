@@ -2,7 +2,7 @@
 
 *your name, alive.*
 
-alive.name finds an old name buried in a git history and helps you make it yours again: safely, on your own machine, with a verified backup before anything is ever touched. It is part of [Yours full stop](https://github.com/Yours-Fullstop): free, open tools that take the locks off the things that were always yours.
+alive.name finds an old name buried in a git history and helps you make it yours again: safely, on your own machine, with a verified backup before anything is ever touched. It is part of [Yours full stop](https://github.com/Yours-Full-Stop): free, open tools that take the locks off the things that were always yours.
 
 Thank you for being here. This document covers two things: how to help build it, and one boundary that keeps the project alive for the long run. The boundary comes first, because it matters most.
 

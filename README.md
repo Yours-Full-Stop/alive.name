@@ -7,7 +7,7 @@ messages, in the files themselves. **alive.name** finds every place it still
 lives and helps you make the repository yours again: safely, on your own machine,
 with a verified backup before anything is ever touched.
 
-It is part of [Yours full stop](https://github.com/Yours-Fullstop): free, open
+It is part of [Yours full stop](https://github.com/Yours-Full-Stop): free, open
 tools that take the locks off the things that were always yours.
 
 **alive.name never pushes and never commits for you.** It prepares, explains, and
