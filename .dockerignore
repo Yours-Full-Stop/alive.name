@@ -1,0 +1,9 @@
+# Keep the build context small and clean.
+.git/
+.gitignore
+.gitattributes
+.dockerignore
+/alive
+/alive.exe
+*.exe
+scratchpad/

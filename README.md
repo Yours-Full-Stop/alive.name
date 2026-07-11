@@ -140,6 +140,69 @@ privacy matters to you, prefer the guided flow.
 
 ---
 
+## Running in Docker (optional)
+
+alive.name runs fine as a native binary; Docker is just an optional way to get
+everything in one shot, including the Python-based `git-filter-repo` that
+`reclaim` needs. You never have to use it.
+
+**Two bind mounts are required.** They are not optional, because leaving either
+out breaks the tool in a way that matters:
+
+- `-v "$PWD:/repo"`: the git repository to operate on.
+- `-v "/host/path/backups:/backups"`: a **host** directory where backups are kept.
+
+If you skip the `/backups` mount, any backup would be written *inside* the
+container and lost the moment it is removed, which defeats the whole safety model.
+So the container **refuses** any backup-creating command (`reclaim`, `backup`,
+and the guided walkthrough) unless `/backups` is mounted.
+
+Build it:
+
+```bash
+docker build -t alive .
+```
+
+Run it (Linux/macOS):
+
+```bash
+# See where the old name lives:
+docker run --rm \
+  -v "$PWD:/repo" \
+  -v "$HOME/alive-backups:/backups" \
+  alive trace --old-name "Old Name" --old-email old@example.test --deep
+
+# The guided walkthrough (needs -it for the prompts):
+docker run --rm -it \
+  -v "$PWD:/repo" \
+  -v "$HOME/alive-backups:/backups" \
+  alive
+```
+
+On Windows PowerShell, use `${PWD}` and a host path for backups:
+
+```powershell
+docker run --rm -it -v "${PWD}:/repo" -v "$HOME\alive-backups:/backups" alive
+```
+
+Or use the provided `docker-compose.yml`, which refuses to run unless both paths
+are set, so the required mounts can never be forgotten:
+
+```bash
+ALIVE_REPO="$PWD" ALIVE_BACKUPS="$HOME/alive-backups" docker compose run --rm alive
+```
+
+Notes:
+
+- The image sets `ALIVE_STATE_DIR=/backups`, so backups go to the mount by
+  default with no `--state-dir` needed.
+- It still never pushes and never commits. `reclaim` prints the publish commands
+  for you to run on the host.
+- On Linux, files written into the backup mount are owned by the container's
+  user (root). Pass `--user "$(id -u):$(id -g)"` if you want host ownership.
+
+---
+
 ## Safety, by design
 
 - **Backup before anything destructive.** No code path that alters a repository

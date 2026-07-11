@@ -103,6 +103,28 @@ func TestCleanupCommandShellOverride(testingHandle *testing.T) {
 	})
 }
 
+func TestResolveStateDirectoryPrecedence(testingHandle *testing.T) {
+	testingHandle.Run("flag wins over everything", func(subTest *testing.T) {
+		subTest.Setenv("ALIVE_STATE_DIR", "/from/env")
+		if got := resolveStateDirectory("/from/flag"); got != "/from/flag" {
+			subTest.Errorf("expected the flag to win, got %q", got)
+		}
+	})
+	testingHandle.Run("env var is used when no flag is given", func(subTest *testing.T) {
+		subTest.Setenv("ALIVE_STATE_DIR", "/from/env")
+		if got := resolveStateDirectory(""); got != "/from/env" {
+			subTest.Errorf("expected the env var to be used, got %q", got)
+		}
+	})
+	testingHandle.Run("falls back to a per-user default", func(subTest *testing.T) {
+		subTest.Setenv("ALIVE_STATE_DIR", "")
+		got := resolveStateDirectory("")
+		if got == "" || got == "/from/env" {
+			subTest.Errorf("expected a per-user default path, got %q", got)
+		}
+	})
+}
+
 func TestReclaimIsDryRunByDefault(testingHandle *testing.T) {
 	reclaimCommand := findSubcommand(newRootCommand(), "reclaim")
 	if reclaimCommand == nil {

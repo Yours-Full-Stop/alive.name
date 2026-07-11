@@ -152,11 +152,16 @@ func repositoryPathFromCommand(command *cobra.Command) string {
 	return repositoryPath
 }
 
-// resolveStateDirectory picks where backups live: the flag if given, otherwise a
-// per-user location outside any repository.
+// resolveStateDirectory picks where backups live, in order of precedence: the
+// --state-dir flag, then the ALIVE_STATE_DIR environment variable (used by the
+// Docker image to point at the mounted /backups directory), then a per-user
+// location outside any repository.
 func resolveStateDirectory(override string) string {
 	if strings.TrimSpace(override) != "" {
 		return override
+	}
+	if environmentDirectory := strings.TrimSpace(os.Getenv("ALIVE_STATE_DIR")); environmentDirectory != "" {
+		return environmentDirectory
 	}
 	homeDirectory, homeError := os.UserHomeDir()
 	if homeError != nil {

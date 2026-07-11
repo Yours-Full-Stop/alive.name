@@ -1,0 +1,24 @@
+# Optional convenience wrapper for the alive.name container.
+#
+# Both mounts are REQUIRED. Compose refuses to run unless ALIVE_REPO and
+# ALIVE_BACKUPS are set, so a backup can never be written to an ephemeral
+# location and lost when the container is removed.
+#
+# Usage (run from anywhere):
+#   ALIVE_REPO="$PWD" ALIVE_BACKUPS="$HOME/alive-backups" docker compose run --rm alive trace --old-name "Old Name"
+#   ALIVE_REPO="$PWD" ALIVE_BACKUPS="$HOME/alive-backups" docker compose run --rm alive
+#
+# On Windows PowerShell use ${PWD} and a host path, for example:
+#   $env:ALIVE_REPO=$PWD; $env:ALIVE_BACKUPS="$HOME\alive-backups"; docker compose run --rm alive
+
+services:
+  alive:
+    build: .
+    image: alive:latest
+    # Keep stdin open and allocate a TTY so the guided walkthrough and the
+    # confirmation prompts work.
+    stdin_open: true
+    tty: true
+    volumes:
+      - "${ALIVE_REPO:?set ALIVE_REPO to the git repository path to operate on}:/repo"
+      - "${ALIVE_BACKUPS:?set ALIVE_BACKUPS to a host directory for backups; without it backups are lost}:/backups"
