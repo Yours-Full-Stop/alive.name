@@ -3,8 +3,8 @@
 # that `alive reclaim` needs.
 #
 # Two bind mounts are REQUIRED for real use (see README and docker-entrypoint.sh):
-#   -v "$PWD:/repo"                 the git repository to operate on
-#   -v "/host/path/backups:/backups"   where verified backups are kept
+#   -v "/path/to/working/repo:/repo"     the git repository to operate on
+#   -v "/path/to/backups:/backups"       where verified backups are kept
 #
 # Without the /backups mount, any backup would live only inside the container and
 # be lost when it is removed. The entrypoint refuses backup-creating commands

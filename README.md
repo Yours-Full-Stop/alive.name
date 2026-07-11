@@ -149,8 +149,8 @@ everything in one shot, including the Python-based `git-filter-repo` that
 **Two bind mounts are required.** They are not optional, because leaving either
 out breaks the tool in a way that matters:
 
-- `-v "$PWD:/repo"`: the git repository to operate on.
-- `-v "/host/path/backups:/backups"`: a **host** directory where backups are kept.
+- `-v "/path/to/working/repo:/repo"`: the git repository to operate on.
+- `-v "/path/to/backups:/backups"`: a **host** directory where backups are kept.
 
 If you skip the `/backups` mount, any backup would be written *inside* the
 container and lost the moment it is removed, which defeats the whole safety model.
@@ -168,28 +168,28 @@ Run it (Linux/macOS):
 ```bash
 # See where the old name lives:
 docker run --rm \
-  -v "$PWD:/repo" \
-  -v "$HOME/alive-backups:/backups" \
+  -v "/path/to/working/repo:/repo" \
+  -v "/path/to/backups:/backups" \
   alive trace --old-name "Old Name" --old-email old@example.test --deep
 
 # The guided walkthrough (needs -it for the prompts):
 docker run --rm -it \
-  -v "$PWD:/repo" \
-  -v "$HOME/alive-backups:/backups" \
+  -v "/path/to/working/repo:/repo" \
+  -v "/path/to/backups:/backups" \
   alive
 ```
 
-On Windows PowerShell, use `${PWD}` and a host path for backups:
+On Windows PowerShell, use your own paths (backslashes for the host side):
 
 ```powershell
-docker run --rm -it -v "${PWD}:/repo" -v "$HOME\alive-backups:/backups" alive
+docker run --rm -it -v "C:\path\to\working\repo:/repo" -v "C:\path\to\backups:/backups" alive
 ```
 
 Or use the provided `docker-compose.yml`, which refuses to run unless both paths
 are set, so the required mounts can never be forgotten:
 
 ```bash
-ALIVE_REPO="$PWD" ALIVE_BACKUPS="$HOME/alive-backups" docker compose run --rm alive
+ALIVE_REPO="/path/to/working/repo" ALIVE_BACKUPS="/path/to/backups" docker compose run --rm alive
 ```
 
 Notes:

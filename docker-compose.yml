@@ -4,12 +4,12 @@
 # ALIVE_BACKUPS are set, so a backup can never be written to an ephemeral
 # location and lost when the container is removed.
 #
-# Usage (run from anywhere):
-#   ALIVE_REPO="$PWD" ALIVE_BACKUPS="$HOME/alive-backups" docker compose run --rm alive trace --old-name "Old Name"
-#   ALIVE_REPO="$PWD" ALIVE_BACKUPS="$HOME/alive-backups" docker compose run --rm alive
+# Usage: set both to your own paths.
+#   ALIVE_REPO="/path/to/working/repo" ALIVE_BACKUPS="/path/to/backups" docker compose run --rm alive trace --old-name "Old Name"
+#   ALIVE_REPO="/path/to/working/repo" ALIVE_BACKUPS="/path/to/backups" docker compose run --rm alive
 #
-# On Windows PowerShell use ${PWD} and a host path, for example:
-#   $env:ALIVE_REPO=$PWD; $env:ALIVE_BACKUPS="$HOME\alive-backups"; docker compose run --rm alive
+# On Windows PowerShell, for example:
+#   $env:ALIVE_REPO="C:\path\to\working\repo"; $env:ALIVE_BACKUPS="C:\path\to\backups"; docker compose run --rm alive
 
 services:
   alive:

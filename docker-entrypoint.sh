@@ -50,7 +50,7 @@ esac
 
 usage_hint() {
 	echo "       Example:" >&2
-	echo "         docker run --rm -it -v \"\$PWD:/repo\" -v \"/host/path/backups:/backups\" alive $*" >&2
+	echo "         docker run --rm -it -v \"/path/to/working/repo:/repo\" -v \"/path/to/backups:/backups\" alive $*" >&2
 }
 
 if [ "$repo_required" -eq 1 ] && ! is_mounted "$REPO_DIR"; then
