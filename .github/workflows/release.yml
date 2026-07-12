@@ -53,10 +53,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          # Mark 0.x versions and anything with a pre-release suffix as a pre-release.
+          # Mark only semver pre-releases (a hyphen suffix, like v1.0.0-rc1) as a
+          # GitHub pre-release. A normal minor or patch release, including 0.x, is
+          # a real release.
           prerelease=""
           case "${GITHUB_REF_NAME}" in
-            v0.*|*-*) prerelease="--prerelease" ;;
+            *-*) prerelease="--prerelease" ;;
           esac
           gh release create "${GITHUB_REF_NAME}" \
             --title "${GITHUB_REF_NAME}" \
