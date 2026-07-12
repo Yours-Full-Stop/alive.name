@@ -25,7 +25,7 @@ jobs:
     name: Build image (publish only on release tags)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # For building the arm64 image on an amd64 runner.
       - name: Set up QEMU
