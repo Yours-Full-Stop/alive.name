@@ -46,6 +46,12 @@ RUN apt-get update \
 # user, so git would otherwise refuse to operate on it ("dubious ownership").
 RUN git config --system --add safe.directory '*'
 
+# A repository checked out on Windows has CRLF line endings. Without this, the
+# Linux git in the container reports every text file as modified, which makes
+# reclaim's dirty-tree check refuse on a repository that is actually clean.
+# `input` normalises CRLF to LF only for comparison; it never rewrites your files.
+RUN git config --system core.autocrlf input
+
 COPY --from=build /out/alive /usr/local/bin/alive
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
