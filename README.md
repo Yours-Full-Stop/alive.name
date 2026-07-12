@@ -94,10 +94,16 @@ alive reclaim ... --apply --acknowledge-signed --acknowledge-pushed
 ```
 
 Before it touches anything, `reclaim` makes a **verified backup** and refuses to
-proceed without one. It refuses on a dirty working tree, warns about signed
-commits and already-published history, and is a dry run unless you pass
-`--apply`. After a rewrite it does **not** push; it prints the exact publish
-commands for you to run.
+proceed without one. It refuses when tracked files have uncommitted changes
+(commit or stash them first), warns about signed commits and already-published
+history, and is a dry run unless you pass `--apply`. After a rewrite it does
+**not** push; it prints the exact publish commands for you to run.
+
+**Untracked files are left alone, on purpose.** A history rewrite only touches
+committed history, so files git is not tracking (build output, editor folders
+like `.vscode` or `.idea`, anything gitignored) cannot be affected and do not
+block the rewrite. When any are present, `reclaim` lists them first so you can
+see exactly what it is leaving untouched; it never deletes or modifies them.
 
 **One thing to watch:** `reclaim` also replaces the old name inside **file
 contents**, matched literally (not as a whole word). A short or common old name

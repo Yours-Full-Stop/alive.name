@@ -156,6 +156,61 @@ func TestIntegrationAdditionalReaders(testingHandle *testing.T) {
 	}
 }
 
+func TestIntegrationWorkingTreeCleanlinessIgnoresUntracked(testingHandle *testing.T) {
+	requireGitBinary(testingHandle)
+	repository := fixturerepo.New(testingHandle)
+	repository.Commit(fixturerepo.CommitSpec{
+		Message: "initial",
+		Files: map[string]string{
+			"README.md":  "hello",
+			".gitignore": "ignored.txt\n",
+		},
+	})
+	client := newClientForRepository(testingHandle, repository.Path())
+
+	assertClean := func(subTest *testing.T, want bool) {
+		subTest.Helper()
+		isClean, cleanError := client.WorkingTreeIsClean()
+		if cleanError != nil {
+			subTest.Fatalf("WorkingTreeIsClean: %v", cleanError)
+		}
+		if isClean != want {
+			subTest.Errorf("WorkingTreeIsClean = %v, want %v", isClean, want)
+		}
+	}
+
+	testingHandle.Run("untracked files do not dirty the tree", func(subTest *testing.T) {
+		repository.WriteWorkingTreeFile("stray.txt", "loose")
+		assertClean(subTest, true)
+
+		untrackedFiles, listError := client.ListUntrackedFiles()
+		if listError != nil {
+			subTest.Fatalf("ListUntrackedFiles: %v", listError)
+		}
+		if len(untrackedFiles) != 1 || untrackedFiles[0] != "stray.txt" {
+			subTest.Errorf("expected [stray.txt], got %v", untrackedFiles)
+		}
+	})
+
+	testingHandle.Run("ignored files are not reported as untracked", func(subTest *testing.T) {
+		repository.WriteWorkingTreeFile("ignored.txt", "junk")
+		untrackedFiles, listError := client.ListUntrackedFiles()
+		if listError != nil {
+			subTest.Fatalf("ListUntrackedFiles: %v", listError)
+		}
+		for _, untrackedPath := range untrackedFiles {
+			if untrackedPath == "ignored.txt" {
+				subTest.Errorf("an ignored file must not be listed as untracked, got %v", untrackedFiles)
+			}
+		}
+	})
+
+	testingHandle.Run("a modified tracked file dirties the tree", func(subTest *testing.T) {
+		repository.WriteWorkingTreeFile("README.md", "changed")
+		assertClean(subTest, false)
+	})
+}
+
 func TestIntegrationEmptyRepository(testingHandle *testing.T) {
 	requireGitBinary(testingHandle)
 	repository := fixturerepo.New(testingHandle)

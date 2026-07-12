@@ -482,9 +482,12 @@ func (client *GitClient) CloneMirrorOfRemote(remoteURL, destinationPath string) 
 }
 
 // WorkingTreeIsClean reports whether the working tree has no staged or unstaged
-// changes and no untracked files.
+// changes to tracked files. Untracked files are deliberately ignored
+// (--untracked-files=no): a history rewrite never touches them, so their
+// presence is not a reason to refuse. Callers that want to tell the user about
+// them anyway should use ListUntrackedFiles.
 func (client *GitClient) WorkingTreeIsClean() (bool, error) {
-	output, runError := client.executeInRepository("status", "--porcelain")
+	output, runError := client.executeInRepository("status", "--porcelain", "--untracked-files=no")
 	if runError != nil {
 		return false, fmt.Errorf("gitclient: reading working tree status: %w", runError)
 	}
@@ -559,6 +562,20 @@ func (client *GitClient) ListTrackedWorkingTreeFiles() ([]string, error) {
 	output, runError := client.executeInRepository("ls-files", "-z")
 	if runError != nil {
 		return nil, fmt.Errorf("gitclient: listing tracked files: %w", runError)
+	}
+	return splitOnNulTerminator(string(output)), nil
+}
+
+// ListUntrackedFiles returns the repository-relative paths of files that are
+// present in the working tree but neither tracked by git nor ignored.
+// --exclude-standard honours .gitignore, .git/info/exclude, and the global
+// ignore file, so files the user has already told git to ignore are not listed.
+// Paths use forward slashes. A history rewrite leaves these files untouched;
+// reclaim lists them so their presence is never a silent surprise.
+func (client *GitClient) ListUntrackedFiles() ([]string, error) {
+	output, runError := client.executeInRepository("ls-files", "--others", "--exclude-standard", "-z")
+	if runError != nil {
+		return nil, fmt.Errorf("gitclient: listing untracked files: %w", runError)
 	}
 	return splitOnNulTerminator(string(output)), nil
 }

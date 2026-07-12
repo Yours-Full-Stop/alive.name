@@ -50,6 +50,7 @@ type FilterRepoRunner interface {
 type repositoryController interface {
 	RepositoryPath() string
 	WorkingTreeIsClean() (bool, error)
+	ListUntrackedFiles() ([]string, error)
 	HasSignedCommits() (bool, error)
 	ListRemotes() ([]gitclient.Remote, error)
 }
@@ -105,7 +106,11 @@ func history(controller repositoryController, filterRepo FilterRepoRunner, count
 		return fmt.Errorf("reclaim: checking the working tree: %w", cleanError)
 	}
 	if !workingTreeClean {
-		return fmt.Errorf("reclaim: refusing to rewrite history with a dirty working tree; commit or stash your changes first")
+		return fmt.Errorf("reclaim: refusing to rewrite history with uncommitted changes to tracked files; commit or stash them first")
+	}
+
+	if reportError := reportUntrackedFiles(controller, output); reportError != nil {
+		return reportError
 	}
 
 	if gateError := checkSignedCommitGate(controller, plan, output); gateError != nil {
@@ -159,6 +164,44 @@ func history(controller repositoryController, filterRepo FilterRepoRunner, count
 	}
 	fmt.Fprint(output, buildPublishInstructions(remotes))
 	return nil
+}
+
+// maxUntrackedFilesToList caps how many untracked paths the transparency note
+// prints, so a working tree full of build output or editor folders does not
+// flood the screen.
+const maxUntrackedFilesToList = 10
+
+// reportUntrackedFiles tells the user, before the rewrite proceeds, about any
+// untracked files in the working tree. The dirty-tree gate deliberately ignores
+// untracked files because a history rewrite never touches them; this note keeps
+// that decision transparent so their presence is never a silent surprise.
+func reportUntrackedFiles(controller repositoryController, output io.Writer) error {
+	untrackedFiles, listError := controller.ListUntrackedFiles()
+	if listError != nil {
+		return fmt.Errorf("reclaim: listing untracked files: %w", listError)
+	}
+	if len(untrackedFiles) == 0 {
+		return nil
+	}
+
+	fmt.Fprintf(output, "Note: %s present in your working tree. A history rewrite does not touch untracked files, so they are left exactly as they are:\n", describeUntrackedCount(len(untrackedFiles)))
+	for index, untrackedPath := range untrackedFiles {
+		if index == maxUntrackedFilesToList {
+			fmt.Fprintf(output, "  ... and %d more\n", len(untrackedFiles)-maxUntrackedFilesToList)
+			break
+		}
+		fmt.Fprintf(output, "  %s\n", untrackedPath)
+	}
+	return nil
+}
+
+// describeUntrackedCount renders the count with correct singular or plural
+// agreement, so the note reads naturally for one file or many.
+func describeUntrackedCount(count int) string {
+	if count == 1 {
+		return "1 untracked file is"
+	}
+	return fmt.Sprintf("%d untracked files are", count)
 }
 
 func checkSignedCommitGate(controller repositoryController, plan Plan, output io.Writer) error {

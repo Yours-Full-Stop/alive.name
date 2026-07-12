@@ -87,7 +87,7 @@ These are design invariants. A contribution that breaks one will not be merged, 
 1. **The tool never pushes, and never commits on the user's behalf.** No pull request may add a code path that runs `git push` or `git commit` for the user. Publishing and committing are always the user's own deliberate act. The tool prepares, explains, and hands back the exact commands; the human runs them.
 2. **The no-push guarantee is structural.** The `gitclient` package has no push capability and must never gain one. The subcommand allowlist must never include `push`. There is a test that asserts this; do not weaken it.
 3. **Backup before anything destructive.** No code path that alters a repository may run before a verified backup exists. Do not add a flag or shortcut that skips or weakens verification.
-4. **The safety gates stay.** Dry-run by default on the destructive path, explicit confirmation, the dirty-tree refusal, the signed-commit and pushed-history warnings. Convenience never earns their removal.
+4. **The safety gates stay.** Dry-run by default on the destructive path, explicit confirmation, the refusal on uncommitted changes to tracked files, the signed-commit and pushed-history warnings. Convenience never earns their removal. Note the refusal is scoped to tracked changes on purpose: a rewrite cannot touch untracked or ignored files, so they do not block it, but `reclaim` lists them first so the user sees what is being left alone.
 5. **The tool must be accessible.** A tool that liberates identity has to be usable by the people it is for, including screen-reader users. Accessibility regressions are bugs.
 
 ---

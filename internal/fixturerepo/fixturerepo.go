@@ -189,8 +189,9 @@ func (repository *Repository) DetachHead() {
 	repository.runGit(nil, "checkout", "--detach", "HEAD")
 }
 
-// WriteWorkingTreeFile writes an uncommitted file into the working tree, leaving
-// the tree dirty. Useful for exercising WorkingTreeIsClean.
+// WriteWorkingTreeFile writes a file into the working tree without committing it.
+// Writing to a new path leaves an untracked file; overwriting a tracked path
+// leaves an unstaged modification. Useful for exercising working-tree status.
 func (repository *Repository) WriteWorkingTreeFile(relativePath, fileContent string) {
 	repository.testingHandle.Helper()
 	absolutePath := filepath.Join(repository.repositoryPath, filepath.FromSlash(relativePath))

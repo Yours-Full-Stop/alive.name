@@ -2,6 +2,7 @@ package reclaim
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -19,6 +20,8 @@ type fakeController struct {
 	repositoryPath string
 	clean          bool
 	cleanErr       error
+	untracked      []string
+	untrackedErr   error
 	signed         bool
 	signedErr      error
 	remotes        []gitclient.Remote
@@ -28,6 +31,9 @@ type fakeController struct {
 func (controller fakeController) RepositoryPath() string { return controller.repositoryPath }
 func (controller fakeController) WorkingTreeIsClean() (bool, error) {
 	return controller.clean, controller.cleanErr
+}
+func (controller fakeController) ListUntrackedFiles() ([]string, error) {
+	return controller.untracked, controller.untrackedErr
 }
 func (controller fakeController) HasSignedCommits() (bool, error) {
 	return controller.signed, controller.signedErr
@@ -139,6 +145,63 @@ func TestHistoryRefusalGates(testingHandle *testing.T) {
 			}
 		})
 	}
+}
+
+func TestReportUntrackedFiles(testingHandle *testing.T) {
+	testingHandle.Run("no untracked files prints nothing", func(subTest *testing.T) {
+		var output bytes.Buffer
+		if reportError := reportUntrackedFiles(fakeController{}, &output); reportError != nil {
+			subTest.Fatalf("unexpected error: %v", reportError)
+		}
+		if output.Len() != 0 {
+			subTest.Errorf("expected no output, got %q", output.String())
+		}
+	})
+
+	testingHandle.Run("a single file is listed with singular wording", func(subTest *testing.T) {
+		var output bytes.Buffer
+		controller := fakeController{untracked: []string{".claude/"}}
+		if reportError := reportUntrackedFiles(controller, &output); reportError != nil {
+			subTest.Fatalf("unexpected error: %v", reportError)
+		}
+		rendered := output.String()
+		if !strings.Contains(rendered, "1 untracked file is") {
+			subTest.Errorf("expected singular wording, got %q", rendered)
+		}
+		if !strings.Contains(rendered, ".claude/") {
+			subTest.Errorf("expected the untracked path to be listed, got %q", rendered)
+		}
+	})
+
+	testingHandle.Run("many files are capped with a remainder line", func(subTest *testing.T) {
+		var output bytes.Buffer
+		untrackedFiles := make([]string, maxUntrackedFilesToList+5)
+		for index := range untrackedFiles {
+			untrackedFiles[index] = fmt.Sprintf("file%d.txt", index)
+		}
+		controller := fakeController{untracked: untrackedFiles}
+		if reportError := reportUntrackedFiles(controller, &output); reportError != nil {
+			subTest.Fatalf("unexpected error: %v", reportError)
+		}
+		rendered := output.String()
+		if !strings.Contains(rendered, "untracked files are") {
+			subTest.Errorf("expected plural wording, got %q", rendered)
+		}
+		if !strings.Contains(rendered, "... and 5 more") {
+			subTest.Errorf("expected a remainder line, got %q", rendered)
+		}
+		if strings.Contains(rendered, "file10.txt") {
+			subTest.Errorf("files past the cap must not be listed, got %q", rendered)
+		}
+	})
+
+	testingHandle.Run("a listing error is surfaced", func(subTest *testing.T) {
+		var output bytes.Buffer
+		controller := fakeController{untrackedErr: errString("boom")}
+		if reportError := reportUntrackedFiles(controller, &output); reportError == nil {
+			subTest.Error("expected an error when listing fails")
+		}
+	})
 }
 
 func TestBuildReplaceTextExpressions(testingHandle *testing.T) {
