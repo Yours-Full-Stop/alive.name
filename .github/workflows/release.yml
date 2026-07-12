@@ -1,0 +1,66 @@
+name: Release
+
+# Push a version tag (for example `git push origin v0.1.0`) and this builds the
+# cross-platform binaries and publishes them on a GitHub Release. You do not need
+# to create the release by hand; this does it.
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  binaries:
+    name: Build and publish binaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Build cross-platform binaries
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME}"
+          mkdir -p dist build
+          cp README.md CHANGELOG.md LICENSE build/
+          platforms="linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64"
+          for platform in $platforms; do
+            os="${platform%/*}"
+            arch="${platform#*/}"
+            binary="alive"
+            [ "$os" = "windows" ] && binary="alive.exe"
+            echo "Building ${os}/${arch}"
+            CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" \
+              go build -trimpath -ldflags="-s -w" -o "build/${binary}" ./cmd/alive
+            base="alive_${version}_${os}_${arch}"
+            if [ "$os" = "windows" ]; then
+              (cd build && zip -q "../dist/${base}.zip" "$binary" README.md CHANGELOG.md LICENSE)
+            else
+              (cd build && tar czf "../dist/${base}.tar.gz" "$binary" README.md CHANGELOG.md LICENSE)
+            fi
+            rm -f "build/${binary}"
+          done
+          (cd dist && sha256sum * > checksums.txt)
+          ls -la dist
+
+      - name: Create the release and upload assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Mark 0.x versions and anything with a pre-release suffix as a pre-release.
+          prerelease=""
+          case "${GITHUB_REF_NAME}" in
+            v0.*|*-*) prerelease="--prerelease" ;;
+          esac
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --generate-notes \
+            $prerelease \
+            dist/* \
+          || gh release upload "${GITHUB_REF_NAME}" dist/* --clobber

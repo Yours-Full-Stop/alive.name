@@ -1,5 +1,7 @@
 # alive.name
 
+[![CI](https://github.com/Yours-Full-Stop/alive.name/actions/workflows/ci.yml/badge.svg)](https://github.com/Yours-Full-Stop/alive.name/actions/workflows/ci.yml)
+
 *your name, alive.*
 
 An old name can stay buried in a git history for years: in commit metadata, in
@@ -97,6 +99,14 @@ commits and already-published history, and is a dry run unless you pass
 `--apply`. After a rewrite it does **not** push; it prints the exact publish
 commands for you to run.
 
+**One thing to watch:** `reclaim` also replaces the old name inside **file
+contents**, matched literally (not as a whole word). A short or common old name
+can therefore land inside unrelated words: searching for `Sam` would rewrite the
+`Sam` in `Sample`. `alive` warns you at input if an old name looks broad, and the
+default dry run shows exactly what would change. **Read the dry run before you
+`--apply`**, and if a name is short, pair it with an email or use a fuller
+spelling to narrow it.
+
 ### `alive backup`: the backup lifecycle
 
 ```bash
@@ -157,11 +167,17 @@ container and lost the moment it is removed, which defeats the whole safety mode
 So the container **refuses** any backup-creating command (`reclaim`, `backup`,
 and the guided walkthrough) unless `/backups` is mounted.
 
-Build it:
+Pull the prebuilt image (published to the GitHub Container Registry on each
+release), or build it yourself:
 
 ```bash
-docker build -t alive .
+docker pull ghcr.io/yours-full-stop/alive.name:latest   # prebuilt
+# or
+docker build -t alive .                                 # from source
 ```
+
+The examples below use the local `alive` tag; substitute
+`ghcr.io/yours-full-stop/alive.name:latest` if you pulled the prebuilt image.
 
 Run it (Linux/macOS):
 
@@ -232,6 +248,12 @@ Notes:
 See [CONTRIBUTING.md](CONTRIBUTING.md), which also describes the testing split
 (fast unit tests vs. `-tags integration` real-git tests) and the project's
 non-negotiable safety invariants. Please read the boundary section there first.
+
+---
+
+## License
+
+MIT. See [LICENSE](LICENSE).
 
 ---
 

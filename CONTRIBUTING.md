@@ -16,7 +16,25 @@ But please read this gently. **alive.name is software, not a support service, an
 
 If you are in distress and need a person, please reach one. Talk to someone you trust, or contact a support service in your area.
 
-> Maintainers: replace this line with the specific, vetted resources you want to point people to (for example a trans-focused peer-support line and a general crisis line for your region). Keep it short and real; do not let it rot. If you would rather not host resource links, say so plainly and point to a maintained directory instead.
+These are free and confidential. They cover the UK and Ireland; if you are somewhere else, [findahelpline.com](https://findahelpline.com) lists services by country.
+
+**In a crisis, any time:**
+
+- **Samaritans** (UK and Ireland): call **116 123**, free, 24/7. Or email jo@samaritans.org.
+- **Shout** (UK): text **SHOUT** to **85258**, free, 24/7.
+- **Text About It** (Ireland): text **TALK** to **50808**, free, 24/7.
+
+**LGBTQ+ and trans peer support:**
+
+- **Switchboard** (UK): **0800 0119 100**, 10am to 10pm every day, and web chat at [switchboard.lgbt](https://switchboard.lgbt).
+- **LGBT Ireland**: **1800 929 539**, and web chat at [lgbt.ie](https://lgbt.ie).
+- **Mermaids** (UK, for trans and gender-questioning under-20s, their families, and allies): **0808 801 0400**, Monday to Friday, and web chat at [mermaidsuk.org.uk](https://mermaidsuk.org.uk).
+
+**Eating disorders:**
+
+- **National Alliance for Eating Disorders**: **1 (866) 662-1235**, staffed by licensed therapists, [allianceforeatingdisorders.com](https://www.allianceforeatingdisorders.com). (For local services elsewhere, [findahelpline.com](https://findahelpline.com) can help.)
+
+<!-- Maintainers: these details were verified in July 2026. Re-check them periodically; a dead crisis line is worse than none. If you would rather not host links at all, delete this list and point to https://findahelpline.com instead. -->
 
 None of this is a lack of care. It is the opposite. A maintainer who tries to be everyone's support line burns out, and then the tool dies and helps no one. Holding this boundary is how the work survives to keep helping. If you open an issue that is really a personal crisis, expect a kind pointer back to this section rather than silence, and please do not read that as rejection.
 
@@ -41,6 +59,24 @@ Be kind. Assume good faith. Harassment, deadnaming, gatekeeping, or cruelty of a
 - **Share resource links** for the boundary section above, if you know good, current ones.
 
 You are of course free to commit and push to your own fork however you like. The rules below are about what the *tool* is allowed to do, not how you work.
+
+### Scenarios worth exercising
+
+If you are testing on a throwaway repository, these are the cases most likely to
+surprise someone, so they are the most useful to try:
+
+- **A short or common old name** (say `Sam`, `Rose`, or `Al`). Confirm that `alive`
+  flags it as broad at input, and that `reclaim`'s dry run makes it obvious *before*
+  you apply if it would rewrite the name inside unrelated words (for example the
+  `Sam` in `Sample`). This is the sharpest edge; a report here is valuable.
+- **A repository with a remote.** Check that the three-zone report reads clearly
+  and that `reclaim` warns about already-published history.
+- **A unicode name, or a name with punctuation** (accents, `.`, `+`, `()`), to make
+  sure matching and rewriting handle it.
+- **A repository with signed commits**, to confirm `reclaim` warns before breaking
+  the signatures.
+- **The bare `alive` walkthrough, end to end**, on a hard-but-safe example. Tell us
+  where the wording felt cold, confusing, or scary.
 
 ---
 

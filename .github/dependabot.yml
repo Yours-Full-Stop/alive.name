@@ -1,0 +1,21 @@
+version: 2
+updates:
+  # Go module dependencies (cobra, go-gitignore, and their transitive deps).
+  - package-ecosystem: gomod
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  # GitHub Actions used in the workflows. If the actions are pinned to commit
+  # SHAs, Dependabot keeps them pinned to SHAs while bumping to new releases.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+
+  # The Debian base image in the Dockerfile.
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: weekly

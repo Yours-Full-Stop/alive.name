@@ -26,6 +26,15 @@ RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/alive ./cmd/alive
 # --- Runtime stage: git + git-filter-repo (which pulls in python3) -----------
 FROM debian:bookworm-slim
 
+# OCI labels so `docker inspect` and the registry package page are informative
+# and link back to the docs. The CI build adds dynamic labels (version, revision)
+# on top of these.
+LABEL org.opencontainers.image.title="alive.name" \
+      org.opencontainers.image.description="Find an old name in your git history and make it yours again, safely and locally, with a verified backup before anything changes. Never pushes or commits for you." \
+      org.opencontainers.image.source="https://github.com/Yours-Full-Stop/alive.name" \
+      org.opencontainers.image.documentation="https://github.com/Yours-Full-Stop/alive.name/blob/main/README.md" \
+      org.opencontainers.image.licenses="MIT"
+
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       git \
@@ -40,6 +49,11 @@ RUN git config --system --add safe.directory '*'
 COPY --from=build /out/alive /usr/local/bin/alive
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Carry the README and license inside the image too, so they travel with it.
+# Read the README with:
+#   docker run --rm --entrypoint cat <image> /usr/share/doc/alive/README.md
+COPY README.md LICENSE /usr/share/doc/alive/
 
 # Backups default here. This MUST be a bind mount to a host directory.
 ENV ALIVE_STATE_DIR=/backups
