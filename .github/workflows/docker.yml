@@ -32,7 +32,7 @@ jobs:
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       # Only log in when we are actually going to push (a release tag).
       - name: Log in to GHCR
